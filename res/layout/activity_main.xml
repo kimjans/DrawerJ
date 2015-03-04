@@ -24,11 +24,21 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
-                android:background="#120000"></RelativeLayout>
+                android:background="#120000">
+                
+                	<android.support.v4.view.ViewPager
+		                android:id="@+id/ViewPager_information_content_view"
+		                android:layout_width="match_parent"
+		                android:layout_height="match_parent"
+		                android:requiresFadingEdge="horizontal"
+		                android:layout_alignParentTop="true" />
+                	
+            </RelativeLayout>
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:background="#000056"></RelativeLayout>
+             
 
         </LinearLayout>
 
