@@ -5,9 +5,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.app.FragmentManager;
 
 public class MainActivity extends FragmentActivity {
 
@@ -23,6 +23,27 @@ public class MainActivity extends FragmentActivity {
 		
 		mViewPager = (ViewPager) findViewById(R.id.ViewPager_information_content_view);
 		mViewPager.setAdapter(    new pagerAdapter(    getSupportFragmentManager()   )      );
+		mViewPager.setOnPageChangeListener( new ViewPager.OnPageChangeListener() {
+			
+			@Override
+			public void onPageSelected(int arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onPageScrolled(int arg0, float arg1, int arg2) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onPageScrollStateChanged(int arg0) {
+				// TODO Auto-generated method stub
+				 
+				
+			}
+		});
 		
 	}
 	

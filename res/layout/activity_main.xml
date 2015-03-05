@@ -5,6 +5,7 @@
 
 
     <com.example.stest.ScrollView
+        android:id="@+id/scrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -26,7 +27,7 @@
                 android:layout_height="300dp"
                 android:background="#120000">
                 
-                	<android.support.v4.view.ViewPager
+                	<com.example.stest.viewPagerTemp
 		                android:id="@+id/ViewPager_information_content_view"
 		                android:layout_width="match_parent"
 		                android:layout_height="match_parent"

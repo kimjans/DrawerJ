@@ -45,18 +45,57 @@ public class ScrollView extends RelativeLayout {
     }
     
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
+    public boolean onInterceptTouchEvent(MotionEvent event) {
     	
-    	
-    	return false;	
+    	switch ( event.getAction() ) {
+			case MotionEvent.ACTION_DOWN:
+				//("tag", "intercepDown");
+				startY = (int)event.getY();
+				startX = (int)event.getX();
+				touchEventHandler(event);
+				
+				return false;
+			case MotionEvent.ACTION_MOVE :
+				
+				if(Math.abs(startX -(int)event.getX()) > 20){
+					//stopTracking();
+				}	
+					
+				if( Math.abs(startY -(int)event.getY()) > 20 ){
+					return true;
+				}
+				//Log.d("tag", "intercepMove");
+				
+				return false;
+			case MotionEvent.ACTION_UP :
+			case MotionEvent.ACTION_CANCEL :
+				//Log.d("tag", "touch cancel");
+				break;
+		}
+    	return false;
     	
     };
-    
-    
     private int startY= 0;
+    private int startX= 0;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+    	switch ( event.getAction() ) {
+			case MotionEvent.ACTION_DOWN:
+				return true;
+			case MotionEvent.ACTION_UP :
+			case MotionEvent.ACTION_CANCEL :
+				Log.d("tag", "touch cancel");
+			default :
+				touchEventHandler(event);
+				break;
+		}
+    	return false;
+    };
     
+    private boolean touchEventHandler(MotionEvent event){
+    	
+    	//if(!mTracking){return false;}
+    	
     	if(mTracking){
     		mVelocityTracker.addMovement(event);
     	}
@@ -64,20 +103,17 @@ public class ScrollView extends RelativeLayout {
     	switch ( event.getAction() ) {
 			case MotionEvent.ACTION_DOWN:
 				mTouchDelta = (int) event.getY() - content.getTop();
-				prepareTracking( content.getTop() );
-				startY = (int)event.getY();
+				prepareTracking(content.getTop());
+				Log.d("tag", "" + content.getTop());
 				break;
 			case MotionEvent.ACTION_MOVE :
-				if( Math.abs(startY -(int)event.getY()) < 10 ){
-					break;
-				}
+				
 				prepareTargetLine( content.getTop(), true); //움직임을 전체범위로세팅.
 				//content.setTop(   (int) event.getY() - mTouchDelta  );
 				moveHandle((int)event.getY() - mTouchDelta);
 				break;
 			case MotionEvent.ACTION_UP :
 			case MotionEvent.ACTION_CANCEL :
-				
 				prepareTargetLine( content.getTop(), false ); //움직임을 현저 범위안으로 세팅.
 				
 				if(mTracking){
@@ -113,7 +149,8 @@ public class ScrollView extends RelativeLayout {
 			
     	}
     	return true;
-    };
+    	
+    }
     
     private int mTapThreshold;
     
@@ -450,7 +487,7 @@ public class ScrollView extends RelativeLayout {
 		final float position = mAnimationPosition;
 		final float v = mAnimatedVelocity; // px/s
 		float a = mAnimatedAcceleration; // px/s/s
-		Log.d("test", mAnimatedVelocity + "");
+		//Log.d("test", mAnimatedVelocity + "");
 		
 		mAnimationPosition = position + (v * t) + (0.5f * a * t * t); // px
 		mAnimatedVelocity = v + (a * t); // px/s
