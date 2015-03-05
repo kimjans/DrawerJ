@@ -3,6 +3,8 @@ package com.example.stest;
 //import com.naver.sally.view.SlidingDrawer.SlidingHandler;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.media.DeniedByServerException;
 import android.os.Handler;
 import android.os.Message;
@@ -13,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.MeasureSpec;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -511,6 +514,61 @@ public class ScrollView extends RelativeLayout {
 		if(c1 || c2) return true;
 		return false;
 		
+	}
+	@Override
+	protected void dispatchDraw(Canvas canvas) {
+		final long drawingTime = getDrawingTime();
+		//drawChild(canvas, content, drawingTime);
+		
+		if (mTracking || mAnimating) {
+			final Bitmap cache = content.getDrawingCache();
+			if (cache != null) {
+				canvas.drawBitmap(cache, 0, content.getBottom(), null);
+			} else {
+				canvas.save();
+				//canvas.translate(0, content.getTop());
+				drawChild(canvas, content, drawingTime);
+				canvas.restore();
+			}
+			invalidate();
+		}else{
+			drawChild(canvas, content, drawingTime);
+		}
+	}
+
+	public static final String LOG_TAG = "Sliding";
+
+	@Override
+	protected void onLayout(boolean changed, int l, int t, int r, int b) {
+		
+		if (mTracking) {
+			return;
+		}
+
+		final int width = r - l;
+		final int height = b - t;
+		content.layout(0, content.getTop(), content.getMeasuredWidth(), content.getTop() +content.getMeasuredHeight());		
+		
+	}
+	@Override
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		
+		int widthSpecMode = MeasureSpec.getMode(widthMeasureSpec);
+		int widthSpecSize = MeasureSpec.getSize(widthMeasureSpec);
+
+		int heightSpecMode = MeasureSpec.getMode(heightMeasureSpec);
+		int heightSpecSize = MeasureSpec.getSize(heightMeasureSpec);
+
+		if (widthSpecMode == MeasureSpec.UNSPECIFIED || heightSpecMode == MeasureSpec.UNSPECIFIED) {
+			throw new RuntimeException("SlidingDrawer cannot have UNSPECIFIED dimensions");
+		}
+
+
+		int height = content.getMeasuredHeight();
+		content.measure(MeasureSpec.makeMeasureSpec(widthSpecSize, MeasureSpec.EXACTLY), 
+				MeasureSpec.makeMeasureSpec(heightSpecSize, MeasureSpec.EXACTLY));
+
+		setMeasuredDimension(widthSpecSize, heightSpecSize);
 	}
 	
     private class SlidingHandler extends Handler {
