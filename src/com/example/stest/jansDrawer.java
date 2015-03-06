@@ -82,7 +82,7 @@ public class jansDrawer extends RelativeLayout {
 	}
     
     
-    private ScrollViewTemp NestedScrollView = null; 
+    private JansDrawerScroll NestedScrollView = null; 
     @Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
 		
@@ -96,7 +96,7 @@ public class jansDrawer extends RelativeLayout {
 				return false;
 			}
 			
-			NestedScrollView = (ScrollViewTemp) findScrollView( content, event.getRawX(), event.getRawY() );
+			NestedScrollView = (JansDrawerScroll) findScrollView( content, event.getRawX(), event.getRawY() );
 			if(NestedScrollView != null ){
 				MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN,  event.getX(), event.getY(), 0);
 				NestedScrollView.onTouchEventMine(event);
@@ -137,8 +137,6 @@ public class jansDrawer extends RelativeLayout {
 			case MotionEvent.ACTION_DOWN:
 				return true;
 			case MotionEvent.ACTION_MOVE :
-				//this.requestDisallowInterceptTouchEvent(true);
-				//break;
 			case MotionEvent.ACTION_UP :
 			case MotionEvent.ACTION_CANCEL :
 			default :
@@ -148,7 +146,7 @@ public class jansDrawer extends RelativeLayout {
     	return false;
     };
     
-    private boolean focusInScroll = false;
+    private boolean focusInScroll  = false; // 스크롤View가 동작하고 있는지.
     private boolean touchEventHandler(MotionEvent event){
     	
     	if(mTracking){
@@ -163,24 +161,15 @@ public class jansDrawer extends RelativeLayout {
 			case MotionEvent.ACTION_MOVE :
 				if(!mTracking){return false;}
 				prepareTargetLine( content.getTop(), true); //움직임을 전체범위로세팅.
-				
 				final int moveOffset = (int)event.getY() - mTouchDelta;
 				
-				
-			//	Log.d("test",   content.getTop() + " _ " +((int)event.getY() - mTouchDelta) );
-				
-				
 				if(NestedScrollView != null ){
-					//MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE,  event.getX(), event.getY(), 0);
-					//NestedScrollView.dispatchTouchEvent(ev);
 					if(content.getTop() == topOffseInSet &&  moveOffset < 0){
 						//sliding은 더이상 올라갈곳이 없는데, 더 밀어올리는경
 						//스크롤이있으면 올림.
 						MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE,  event.getX(), event.getY(), 0);
-						//NestedScrollView.dispatchTouchEvent(event);
 						NestedScrollView.onTouchEventMine(event);
 						focusInScroll = true;
-						Log.d("test", NestedScrollView.getScrollY() + "");
 						return false;
 					}
 					if(content.getTop() == topOffseInSet  &&  NestedScrollView.getScrollY() >  0 &&  moveOffset > 0){
@@ -188,7 +177,6 @@ public class jansDrawer extends RelativeLayout {
 						//스크롤이있으면 올림.
 						MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE,  event.getX(), event.getY(), 0);
 						NestedScrollView.onTouchEventMine(event);
-						//NestedScrollView.dispatchTouchEvent(event);
 						focusInScroll = true;
 						return false;
 					}
@@ -197,7 +185,6 @@ public class jansDrawer extends RelativeLayout {
 					//스크롤을 움직이다가 다시 sliding을 움직이기 시작한경
 					focusInScroll = false;
 					mTouchDelta = (int) event.getY() - content.getTop();
-					
 				}
 				
 				moveHandle(  moveOffset );
@@ -210,8 +197,6 @@ public class jansDrawer extends RelativeLayout {
 						MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP,  event.getX(), event.getY(), 0);
 						NestedScrollView.onTouchEventMine(event);
 						NestedScrollView.requestLayout();
-						//NestedScrollView.dispatchTouchEvent(event);
-						//NestedScrollView.computeScroll();
 				}
 				if(focusInScroll){
 					stopTracking();
@@ -322,28 +307,10 @@ public class jansDrawer extends RelativeLayout {
 	}
 	
     private void prepareTracking(int position) {
+    	
 		mTracking = true;
 		mVelocityTracker = VelocityTracker.obtain();
-		boolean opening = !mExpanded;
 
-		if (opening) {
-			mAnimatedAcceleration = mMaximumAcceleration;
-			mAnimatedVelocity = mMaximumMajorVelocity;
-			mAnimationPosition = mBottomOffset + ( getHeight() - mHandleHeight );
-			moveHandle((int) mAnimationPosition);
-			mAnimating = true;
-			mHandler.removeMessages(MSG_ANIMATE);
-			long now = SystemClock.uptimeMillis();
-			mAnimationLastTime = now;
-			mCurrentAnimationTime = now + ANIMATION_FRAME_DURATION;
-			mAnimating = true;
-		} else {
-			if (mAnimating) {
-				mAnimating = false;
-				mHandler.removeMessages(MSG_ANIMATE);
-			}
-			moveHandle(position);
-		}
 	}
     private void stopTracking() {
 
@@ -425,7 +392,6 @@ public class jansDrawer extends RelativeLayout {
 			//c2 = position > getHeight() - mThresHold*density;//(position > (getHeight()) / 2);
 			c2 = position > mCurrentBottomOffset - mThresHold;//(position > (getHeight()) / 2);
 			c3 = velocity > -mMaximumMajorVelocity;
-			//Log.d("test",  position +"___" + mThresHold+"____" + density);
 			if (!always && (c1 || (c2 && c3))) {
 				mAnimatedAcceleration = mMaximumAcceleration;
 				if (velocity < 0) {
@@ -438,13 +404,9 @@ public class jansDrawer extends RelativeLayout {
 				}
 			}
 		}
-		if( checkAnimationFrame() ){
-			//Log.d("test", "yes");
-			prepareTargetLine( 0, true); //움직임을 전체범위로세팅.
-		}else{
-			
-		//	Log.d("test", "no");
-			
+		
+		if( checkAnimationFrame() ){ //빠른속도로 움직이고 있으면.
+			prepareTargetLine( 0, true); //최상단, 최하단까지 움직일수있도록 변경.
 		}
 		
     	long now = SystemClock.uptimeMillis();
@@ -456,8 +418,6 @@ public class jansDrawer extends RelativeLayout {
 		stopTracking();
     	
     }
-    
-    
     
     private int mCurrentTopOffset;
     private int mCurrentBottomOffset;

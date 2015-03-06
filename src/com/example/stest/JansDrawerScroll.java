@@ -7,22 +7,21 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.ScrollView;
 
-public class ScrollViewTemp extends ScrollView {
+public class JansDrawerScroll extends ScrollView {
 
 	/**
 	 * @param context
 	 * @param attrs
 	 */
-	public ScrollViewTemp(Context context, AttributeSet attrs) {
+	public JansDrawerScroll(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		// TODO Auto-generated constructor stub
 	}
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
+			//이벤트들을 drawer에서 호출하기 때문에 모두 제거
 			return false;
 	}
 	public boolean onTouchEventMine(MotionEvent ev) {
-			// TODO Auto-generated method stub
 			
 			switch ( ev.getAction() ) {
 			case MotionEvent.ACTION_DOWN:
@@ -43,19 +42,10 @@ public class ScrollViewTemp extends ScrollView {
 		
 		return super.onTouchEvent(ev);
 	}
-	
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent ev) {
-		
+		//이벤트들을 drawer에서 호출하기 때문에 모두 제거		
 		return false;
 	}
-	
-	@Override
-	protected void onLayout(boolean changed, int l, int t, int r, int b) {
-		// TODO Auto-generated method stub
-		
-		super.onLayout(changed, l, t, r, b);
-	}
-	
 
 }

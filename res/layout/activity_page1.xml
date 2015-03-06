@@ -5,7 +5,7 @@
     android:background="#FF3456"
     tools:context=".MainActivity" >
 
-    <com.example.stest.ScrollViewTemp
+    <com.example.stest.JansDrawerScroll
         android:id="@+id/scrollView1"
         android:layout_width="match_parent"
         android:layout_height="500dp"
@@ -104,6 +104,6 @@
                  android:text="Button6" />
 	        
 	    </LinearLayout>
-    </com.example.stest.ScrollViewTemp>
+    </com.example.stest.JansDrawerScroll>
 
 </RelativeLayout>
