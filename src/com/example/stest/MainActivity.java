@@ -23,27 +23,6 @@ public class MainActivity extends FragmentActivity {
 		
 		mViewPager = (ViewPager) findViewById(R.id.ViewPager_information_content_view);
 		mViewPager.setAdapter(    new pagerAdapter(    getSupportFragmentManager()   )      );
-		mViewPager.setOnPageChangeListener( new ViewPager.OnPageChangeListener() {
-			
-			@Override
-			public void onPageSelected(int arg0) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void onPageScrolled(int arg0, float arg1, int arg2) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void onPageScrollStateChanged(int arg0) {
-				// TODO Auto-generated method stub
-				 
-				
-			}
-		});
 		
 	}
 	

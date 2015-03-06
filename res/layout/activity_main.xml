@@ -4,7 +4,7 @@
     tools:context=".MainActivity">
 
 
-    <com.example.stest.ScrollView
+    <com.example.stest.jansDrawer
         android:id="@+id/scrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -16,32 +16,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical">
-
-            <RelativeLayout
-                android:id="@+id/content1"
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:background="#123456"></RelativeLayout>
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:background="#120000">
-                
-                	<com.example.stest.viewPagerTemp
+            
+            <com.example.stest.viewPagerTemp
 		                android:id="@+id/ViewPager_information_content_view"
 		                android:layout_width="match_parent"
-		                android:layout_height="match_parent"
+		                android:layout_height="500dp"
 		                android:requiresFadingEdge="horizontal"
-		                android:layout_alignParentTop="true" />
-                	
-            </RelativeLayout>
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:background="#000056"></RelativeLayout>
-             
+		                android:layout_alignParentTop="true" /> 
 
         </LinearLayout>
 
-    </com.example.stest.ScrollView>
+    </com.example.stest.jansDrawer>
 </RelativeLayout>

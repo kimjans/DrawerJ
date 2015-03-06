@@ -1,11 +1,9 @@
 package com.example.stest;
 
-//import com.naver.sally.view.SlidingDrawer.SlidingHandler;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.media.DeniedByServerException;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
@@ -22,7 +20,7 @@ import android.widget.RelativeLayout;
 /**
  * Created by Jans on 15. 3. 3..
  */
-public class ScrollView extends RelativeLayout {
+public class jansDrawer extends RelativeLayout {
 
 	private boolean mAnimating;
 	private static final int MSG_ANIMATE = 1000;
@@ -34,60 +32,107 @@ public class ScrollView extends RelativeLayout {
 	
 	private VelocityTracker mVelocityTracker;
 	
+	private int startY= 0;
+	private int startX= 0;
+	private int mTapThreshold;
+    
+    private static final int TAP_THRESHOLD = 6;
+    private static final int EXPANDED_FULL_OPEN = -10001;
+	private static final int COLLAPSED_FULL_CLOSED = -10002;
+	private int mTopOffset = 0;
+	private int mBottomOffset  = 0;
+	
+	private static final float MAXIMUM_TAP_VELOCITY = 100.0f;
+	private static final float MAXIMUM_MINOR_VELOCITY = 150.0f;
+	private static final float MAXIMUM_MAJOR_VELOCITY = 200.0f;
+	private static final float MAXIMUM_ACCELERATION =  10000.0f; //원래 2000
+	private static final int VELOCITY_UNITS = 1000;
+	
+    private boolean mTracking;
+    private boolean mExpanded = false;
+    private  int mMaximumTapVelocity;
+	private int mMaximumMinorVelocity;
+	private int mMaximumMajorVelocity;
+	private int mMaximumAcceleration;
+	private  int mVelocityUnits;
+	
+	private int mHandleHeight = 300;
+	
+	private ViewGroup content = null;
+    public int mTouchDelta  = 0 ;
+    private   float density;
+    
+	
+	private Integer[] targetLine;
 		
 		
-    public ScrollView(Context context) {
+    public jansDrawer(Context context) {
         super(context);
     }
-    public ScrollView(Context context, AttributeSet attrs) {
+    public jansDrawer(Context context, AttributeSet attrs) {
         super(context, attrs);
         
     }
-    public ScrollView(Context context, AttributeSet attrs, int defStyle) {
+    public jansDrawer(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
+    public boolean isMoving() {
+		return mTracking || mAnimating;
+	}
     
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent event) {
-    	
-    	switch ( event.getAction() ) {
-			case MotionEvent.ACTION_DOWN:
-				//("tag", "intercepDown");
-				startY = (int)event.getY();
-				startX = (int)event.getX();
-				touchEventHandler(event);
-				
+	public boolean onInterceptTouchEvent(MotionEvent event) {
+		
+		final int action = event.getAction();
+		if (action == MotionEvent.ACTION_DOWN) {
+
+			if (isMoving()) {
+				 return false;
+			}
+			if( !hitTestClickableView(content, event.getRawX(), event.getRawY()) ){
 				return false;
-			case MotionEvent.ACTION_MOVE :
-				
-				if(Math.abs(startX -(int)event.getX()) > 20){
-					//stopTracking();
-				}	
-					
-				if( Math.abs(startY -(int)event.getY()) > 20 ){
-					return true;
-				}
-				//Log.d("tag", "intercepMove");
-				
-				return false;
-			case MotionEvent.ACTION_UP :
-			case MotionEvent.ACTION_CANCEL :
-				//Log.d("tag", "touch cancel");
-				break;
+			}
+			mTracking = true;
+			final int top = content.getTop();
+			mTouchDelta = (int) event.getY() - content.getTop();
+			prepareTracking(top);
+			mVelocityTracker.addMovement(event);
+
+			startX = (int) event.getX();
+			startY = (int) event.getY();
+			
+			return false;
 		}
-    	return false;
-    	
-    };
-    private int startY= 0;
-    private int startX= 0;
+		if (action == MotionEvent.ACTION_MOVE) {
+			int xdiff = Math.abs((int) event.getX() - startX);
+			int ydiff = Math.abs((int) event.getY() - startY);
+
+			if (Math.hypot(xdiff, ydiff) > 30) {
+				if (xdiff < ydiff) {
+					return true; // move 시
+				} else {
+					// 취소.
+					stopTracking();
+					return false;
+				}
+			}
+		}
+		return false;
+	};
+    
     @Override
     public boolean onTouchEvent(MotionEvent event) {
     	switch ( event.getAction() ) {
 			case MotionEvent.ACTION_DOWN:
+				
 				return true;
+			case MotionEvent.ACTION_MOVE :
+					
+				//this.requestDisallowInterceptTouchEvent(true);
+				//break;
+				
 			case MotionEvent.ACTION_UP :
 			case MotionEvent.ACTION_CANCEL :
-				Log.d("tag", "touch cancel");
 			default :
 				touchEventHandler(event);
 				break;
@@ -97,8 +142,6 @@ public class ScrollView extends RelativeLayout {
     
     private boolean touchEventHandler(MotionEvent event){
     	
-    	//if(!mTracking){return false;}
-    	
     	if(mTracking){
     		mVelocityTracker.addMovement(event);
     	}
@@ -107,10 +150,9 @@ public class ScrollView extends RelativeLayout {
 			case MotionEvent.ACTION_DOWN:
 				mTouchDelta = (int) event.getY() - content.getTop();
 				prepareTracking(content.getTop());
-				Log.d("tag", "" + content.getTop());
 				break;
 			case MotionEvent.ACTION_MOVE :
-				
+				if(!mTracking){return false;}
 				prepareTargetLine( content.getTop(), true); //움직임을 전체범위로세팅.
 				//content.setTop(   (int) event.getY() - mTouchDelta  );
 				moveHandle((int)event.getY() - mTouchDelta);
@@ -155,30 +197,20 @@ public class ScrollView extends RelativeLayout {
     	
     }
     
-    private int mTapThreshold;
-    
-    private static final int TAP_THRESHOLD = 6;
-    private static final int EXPANDED_FULL_OPEN = -10001;
-	private static final int COLLAPSED_FULL_CLOSED = -10002;
-	private int mTopOffset = 0;
-	private int mBottomOffset  = 0;
-	
     private void moveHandle(int position) {
     	
 		final View handle = content;
-		 //int mHandleHeight = handle.getHeight();
 		 mHandleHeight = 300; //핸들 높이를 임의로 잡음.
 
 		if (position == EXPANDED_FULL_OPEN) {
 			
-				//handle.offsetTopAndBottom(mTopOffset - handle.getTop());
-			   handle.offsetTopAndBottom(mCurrentTopOffset - handle.getTop());
-				invalidate();
+			handle.offsetTopAndBottom(mCurrentTopOffset - handle.getTop());
+			invalidate();
 				
 		} else if (position == COLLAPSED_FULL_CLOSED) {
 			
-				handle.offsetTopAndBottom(mCurrentBottomOffset -  handle.getTop());
-				invalidate();
+			handle.offsetTopAndBottom(mCurrentBottomOffset -  handle.getTop());
+			invalidate();
 				
 		} else {
 			
@@ -195,41 +227,11 @@ public class ScrollView extends RelativeLayout {
 			}
 
 			handle.offsetTopAndBottom(deltaY);
-
-			//final Rect frame = mFrame;
-			//final Rect region = mInvalidate;
-
-			//handle.getHitRect(frame);
-			//region.set(frame);
-
-			//region.union(frame.left, frame.top - deltaY, frame.right, frame.bottom - deltaY);
-			//region.union(0, frame.bottom - deltaY, getWidth(), frame.bottom - deltaY + mContent.getHeight());
-
-			//invalidate(region);
+			
 		}
 		
 	}
-    
-    private static final float MAXIMUM_TAP_VELOCITY = 100.0f;
-	private static final float MAXIMUM_MINOR_VELOCITY = 150.0f;
-	private static final float MAXIMUM_MAJOR_VELOCITY = 200.0f;
-	private static final float MAXIMUM_ACCELERATION =  10000.0f; //원래 2000
-	private static final int VELOCITY_UNITS = 1000;
-	
-	
-    private boolean mTracking;
-    private boolean mExpanded = false;
-    private  int mMaximumTapVelocity;
-	private int mMaximumMinorVelocity;
-	private int mMaximumMajorVelocity;
-	private int mMaximumAcceleration;
-	private  int mVelocityUnits;
-	
-	private int mHandleHeight = 300;
-	
-	private Integer[] targetLine;
-	
-	
+   
 	//컨텐츠가 움직일 범위를 세팅한다.
 	private void prepareTargetLine(int position, boolean fullRange){
 		
@@ -283,12 +285,8 @@ public class ScrollView extends RelativeLayout {
 		}
 	}
     private void stopTracking() {
-		//mHandle.setPressed(false);
-		mTracking = false;
 
-//		if (mOnDrawerScrollListener != null) {
-//			mOnDrawerScrollListener.onScrollEnded();
-//		}
+    	mTracking = false;
 
 		if (mVelocityTracker != null) {
 			mVelocityTracker.recycle();
@@ -296,14 +294,8 @@ public class ScrollView extends RelativeLayout {
 		}
 	}
     
-    
-    private ViewGroup content = null;
-    public int mTouchDelta  = 0 ;
-    private   float density;
-    
     @Override
     public void onFinishInflate(){
-    	
     	
     	density = getResources().getDisplayMetrics().density;
     	
@@ -315,27 +307,6 @@ public class ScrollView extends RelativeLayout {
 		mTapThreshold = (int) (TAP_THRESHOLD * density + 0.5f);
 
         content = (LinearLayout) findViewById(R.id.wrap);
-
-//        test.setOnTouchListener(new View.OnTouchListener() {
-//
-//            public int mTouchDelta  = 0 ;
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//
-//                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//                    mTouchDelta = (int) event.getY() - v.getTop();
-//                    _("test", event.getY() + " " + v.getTop());
-//
-//                }else if(event.getAction() == MotionEvent.ACTION_UP){
-//                    mTouchDelta  = 0;
-//                }else if(event.getAction() == MotionEvent.ACTION_MOVE){
-//                    v.offsetTopAndBottom( (int) event.getY() - mTouchDelta );
-//                    //v.offsetTopAndBottom( 1 );
-//                }
-//                return true;
-//
-//            }
-//        });
         
         openDrawer();
         
@@ -362,13 +333,11 @@ public class ScrollView extends RelativeLayout {
 			int bottom = getBottom();
 			int handleHeight = mHandleHeight;
 
-			// Log.d(LOG_TAG, "position: " + position + ", velocity: " + velocity + ", mMaximumMajorVelocity: " + mMaximumMajorVelocity);
 			c1 = velocity > mMaximumMajorVelocity ; //속도가 최고속도보다 크다.
 			//c2 =  position > mTopOffset + (mHandleHeight )8;
 			c2 =  position > mCurrentTopOffset + mThresHold ; // 위치가 top보다 아래에 있다.
 			c3 =  velocity > -mMaximumMajorVelocity; //속도가  -최고속도보다 크다.
 			
-			// Log.d(LOG_TAG, "EXPANDED. c1: " + c1 + ", c2: " + c2 + ", c3: " + c3);
 			if (always || (c1 || (c2 && c3))) {
 				// We are expanded, So animate to CLOSE!
 				mAnimatedAcceleration = mMaximumAcceleration;
@@ -497,7 +466,6 @@ public class ScrollView extends RelativeLayout {
 		mAnimationLastTime = now; // ms
 	}
 	
-	
 	//지정된 시간에 모두 올라가는지 판단.
 	private boolean checkAnimationFrame(){
 		
@@ -518,7 +486,6 @@ public class ScrollView extends RelativeLayout {
 	@Override
 	protected void dispatchDraw(Canvas canvas) {
 		final long drawingTime = getDrawingTime();
-		//drawChild(canvas, content, drawingTime);
 		
 		if (mTracking || mAnimating) {
 			final Bitmap cache = content.getDrawingCache();
@@ -534,22 +501,22 @@ public class ScrollView extends RelativeLayout {
 		}else{
 			drawChild(canvas, content, drawingTime);
 		}
+		
 	}
-
-	public static final String LOG_TAG = "Sliding";
 
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		
-		if (mTracking) {
-			return;
-		}
+//		if (mTracking) {
+//			return;
+//		}
 
 		final int width = r - l;
 		final int height = b - t;
 		content.layout(0, content.getTop(), content.getMeasuredWidth(), content.getTop() +content.getMeasuredHeight());		
 		
 	}
+	
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		
@@ -564,12 +531,34 @@ public class ScrollView extends RelativeLayout {
 		}
 
 
-		int height = content.getMeasuredHeight();
 		content.measure(MeasureSpec.makeMeasureSpec(widthSpecSize, MeasureSpec.EXACTLY), 
 				MeasureSpec.makeMeasureSpec(heightSpecSize, MeasureSpec.EXACTLY));
 
 		setMeasuredDimension(widthSpecSize, heightSpecSize);
+		
 	}
+	
+	private Rect mViewRectInWindow = new Rect();
+	
+	private boolean hitTestClickableView(View view, float rawX, float rawY) {
+		int viewLocationInWindow[] = getLocationInWindow(view);
+		mViewRectInWindow.left = viewLocationInWindow[0];
+		mViewRectInWindow.top = viewLocationInWindow[1];
+		mViewRectInWindow.right = mViewRectInWindow.left + view.getWidth();
+		mViewRectInWindow.bottom = mViewRectInWindow.top + view.getHeight();
+		if (mViewRectInWindow.contains((int) rawX, (int) rawY)) {
+			return true;
+		}
+
+		return false;
+	}
+	
+	public static int[] getLocationInWindow(View view) {
+		int location[] = new int[2];
+		view.getLocationInWindow(location);
+		return location;
+	}
+
 	
     private class SlidingHandler extends Handler {
 
