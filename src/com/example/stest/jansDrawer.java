@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.view.View.MeasureSpec;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 
 /**
  * Created by Jans on 15. 3. 3..
@@ -80,6 +81,8 @@ public class jansDrawer extends RelativeLayout {
 		return mTracking || mAnimating;
 	}
     
+    
+    private ScrollViewTemp NestedScrollView = null; 
     @Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
 		
@@ -92,6 +95,14 @@ public class jansDrawer extends RelativeLayout {
 			if( !hitTestClickableView(content, event.getRawX(), event.getRawY()) ){
 				return false;
 			}
+			
+			NestedScrollView = (ScrollViewTemp) findScrollView( content, event.getRawX(), event.getRawY() );
+			if(NestedScrollView != null ){
+				MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN,  event.getX(), event.getY(), 0);
+				NestedScrollView.onTouchEventMine(event);
+				//NestedScrollView.dispatchTouchEvent(event);
+			}
+			
 			mTracking = true;
 			final int top = content.getTop();
 			mTouchDelta = (int) event.getY() - content.getTop();
@@ -107,7 +118,7 @@ public class jansDrawer extends RelativeLayout {
 			int xdiff = Math.abs((int) event.getX() - startX);
 			int ydiff = Math.abs((int) event.getY() - startY);
 
-			if (Math.hypot(xdiff, ydiff) > 30) {
+			if (Math.hypot(xdiff, ydiff) > 10) {
 				if (xdiff < ydiff) {
 					return true; // move 시
 				} else {
@@ -124,13 +135,10 @@ public class jansDrawer extends RelativeLayout {
     public boolean onTouchEvent(MotionEvent event) {
     	switch ( event.getAction() ) {
 			case MotionEvent.ACTION_DOWN:
-				
 				return true;
 			case MotionEvent.ACTION_MOVE :
-					
 				//this.requestDisallowInterceptTouchEvent(true);
 				//break;
-				
 			case MotionEvent.ACTION_UP :
 			case MotionEvent.ACTION_CANCEL :
 			default :
@@ -140,6 +148,7 @@ public class jansDrawer extends RelativeLayout {
     	return false;
     };
     
+    private boolean focusInScroll = false;
     private boolean touchEventHandler(MotionEvent event){
     	
     	if(mTracking){
@@ -154,11 +163,61 @@ public class jansDrawer extends RelativeLayout {
 			case MotionEvent.ACTION_MOVE :
 				if(!mTracking){return false;}
 				prepareTargetLine( content.getTop(), true); //움직임을 전체범위로세팅.
-				//content.setTop(   (int) event.getY() - mTouchDelta  );
-				moveHandle((int)event.getY() - mTouchDelta);
+				
+				final int moveOffset = (int)event.getY() - mTouchDelta;
+				
+				
+			//	Log.d("test",   content.getTop() + " _ " +((int)event.getY() - mTouchDelta) );
+				
+				
+				if(NestedScrollView != null ){
+					//MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE,  event.getX(), event.getY(), 0);
+					//NestedScrollView.dispatchTouchEvent(ev);
+					if(content.getTop() == topOffseInSet &&  moveOffset < 0){
+						//sliding은 더이상 올라갈곳이 없는데, 더 밀어올리는경
+						//스크롤이있으면 올림.
+						MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE,  event.getX(), event.getY(), 0);
+						//NestedScrollView.dispatchTouchEvent(event);
+						NestedScrollView.onTouchEventMine(event);
+						focusInScroll = true;
+						Log.d("test", NestedScrollView.getScrollY() + "");
+						return false;
+					}
+					if(content.getTop() == topOffseInSet  &&  NestedScrollView.getScrollY() >  0 &&  moveOffset > 0){
+						//sliding은 더이상 올라갈곳이 없는데, 스크롤을 내려갈곳이 있고, 방향이 아래로 향함.
+						//스크롤이있으면 올림.
+						MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE,  event.getX(), event.getY(), 0);
+						NestedScrollView.onTouchEventMine(event);
+						//NestedScrollView.dispatchTouchEvent(event);
+						focusInScroll = true;
+						return false;
+					}
+				}
+				if(focusInScroll){
+					//스크롤을 움직이다가 다시 sliding을 움직이기 시작한경
+					focusInScroll = false;
+					mTouchDelta = (int) event.getY() - content.getTop();
+					
+				}
+				
+				moveHandle(  moveOffset );
+				
 				break;
 			case MotionEvent.ACTION_UP :
 			case MotionEvent.ACTION_CANCEL :
+				
+				if(NestedScrollView != null ){
+						MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP,  event.getX(), event.getY(), 0);
+						NestedScrollView.onTouchEventMine(event);
+						NestedScrollView.requestLayout();
+						//NestedScrollView.dispatchTouchEvent(event);
+						//NestedScrollView.computeScroll();
+				}
+				if(focusInScroll){
+					stopTracking();
+					return false;
+				}
+				
 				prepareTargetLine( content.getTop(), false ); //움직임을 현저 범위안으로 세팅.
 				
 				if(mTracking){
@@ -225,17 +284,19 @@ public class jansDrawer extends RelativeLayout {
 				//핸들의 최하단 보다 더 밑으로 내려가면. 최하단으로 맞춤.
 				deltaY = mCurrentBottomOffset  - top;
 			}
-
 			handle.offsetTopAndBottom(deltaY);
 			
 		}
 		
 	}
    
+    
+    private int topOffseInSet; 
 	//컨텐츠가 움직일 범위를 세팅한다.
 	private void prepareTargetLine(int position, boolean fullRange){
 		
 		targetLine = new Integer[]{0, 300, getHeight() - mHandleHeight};
+		topOffseInSet =  targetLine[0]; //가장 위에있는 라인
 		
 		if(fullRange){
 			setMoveRange( targetLine[0], targetLine[ targetLine.length -1 ] );
@@ -287,6 +348,7 @@ public class jansDrawer extends RelativeLayout {
     private void stopTracking() {
 
     	mTracking = false;
+    	NestedScrollView = null;
 
 		if (mVelocityTracker != null) {
 			mVelocityTracker.recycle();
@@ -311,6 +373,7 @@ public class jansDrawer extends RelativeLayout {
         openDrawer();
         
     }
+    
     private void performFling(int position, float velocity, boolean always) {
     	
     	mAnimationPosition = position;
@@ -483,6 +546,7 @@ public class jansDrawer extends RelativeLayout {
 		return false;
 		
 	}
+	
 	@Override
 	protected void dispatchDraw(Canvas canvas) {
 		final long drawingTime = getDrawingTime();
@@ -552,6 +616,33 @@ public class jansDrawer extends RelativeLayout {
 
 		return false;
 	}
+	
+	private View findScrollView(View view, float rawX, float rawY){
+		
+		if( view instanceof ScrollView){
+			int viewLocationInWindow[] = getLocationInWindow(view);
+			mViewRectInWindow.left = viewLocationInWindow[0];
+			mViewRectInWindow.top = viewLocationInWindow[1];
+			mViewRectInWindow.right = mViewRectInWindow.left + view.getWidth();
+			mViewRectInWindow.bottom = mViewRectInWindow.top + view.getHeight();
+			if (mViewRectInWindow.contains((int) rawX, (int) rawY)) {
+				return view;
+			}
+			return null;
+		}
+		if (view instanceof ViewGroup) {
+			ViewGroup viewGroup = (ViewGroup) view;
+			int size = viewGroup.getChildCount();
+			for (int i = 0; i < size; i++) {
+				View v = findScrollView(viewGroup.getChildAt(i), rawX, rawY);
+				if( v != null){
+					return v;
+				}
+			}
+		}
+		return null;
+	}
+	
 	
 	public static int[] getLocationInWindow(View view) {
 		int location[] = new int[2];

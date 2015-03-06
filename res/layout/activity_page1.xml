@@ -5,37 +5,105 @@
     android:background="#FF3456"
     tools:context=".MainActivity" >
 
-    <RelativeLayout
-        android:id="@+id/relativeLayout1"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_alignParentTop="true"
-        android:background="#AAAAAA" >
-    </RelativeLayout>
-
-    <ScrollView
+    <com.example.stest.ScrollViewTemp
         android:id="@+id/scrollView1"
         android:layout_width="match_parent"
         android:layout_height="500dp"
-        android:background="#987654"
-        android:layout_below="@+id/relativeLayout1">
+        android:background="#987654">
 
-         <RelativeLayout
+         <LinearLayout
 	        android:id="@+id/relativeLayout2"
 	        android:layout_width="match_parent"
 	        android:layout_height="1000dp"
+	        android:orientation="vertical"
 	        android:background="#923718">
 
              <Button
                  android:id="@+id/button1"
                  android:layout_width="wrap_content"
                  android:layout_height="wrap_content"
-                 android:layout_alignParentLeft="true"
-                 android:layout_alignParentTop="true"
                  android:layout_marginLeft="15dp"
                  android:text="Button" />
+             <Button
+                 android:id="@+id/button2"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button2" />
+             <Button
+                 android:id="@+id/button3"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button3" />
+             <Button
+                 android:id="@+id/button4"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button4" />
+             <Button
+                 android:id="@+id/button5"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button5" />
+             <Button
+                 android:id="@+id/button6"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button6" />
+             <Button
+                 android:id="@+id/button7"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button6" />
+             <Button
+                 android:id="@+id/button8"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button6" />
+             <Button
+                 android:id="@+id/button9"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button6" />
+             <Button
+                 android:id="@+id/button10"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button6" />
+             <Button
+                 android:id="@+id/button11"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button6" />
+             <Button
+                 android:id="@+id/button12"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button6" />
+             <Button
+                 android:id="@+id/button13"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button6" />
+             <Button
+                 android:id="@+id/button114"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="15dp"
+                 android:text="Button6" />
 	        
-	    </RelativeLayout>
-    </ScrollView>
+	    </LinearLayout>
+    </com.example.stest.ScrollViewTemp>
 
 </RelativeLayout>

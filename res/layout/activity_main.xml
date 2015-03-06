@@ -8,23 +8,28 @@
         android:id="@+id/scrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <LinearLayout
-            android:id="@+id/wrap"
-
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical">
-            
-            <com.example.stest.viewPagerTemp
-		                android:id="@+id/ViewPager_information_content_view"
-		                android:layout_width="match_parent"
-		                android:layout_height="500dp"
-		                android:requiresFadingEdge="horizontal"
-		                android:layout_alignParentTop="true" /> 
-
-        </LinearLayout>
+	
+            <LinearLayout
+	            android:id="@+id/wrap"
+	            android:orientation="vertical"
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_gravity="center_vertical" >
+	            
+				         <RelativeLayout
+					        android:id="@+id/relativeLayout"
+					        android:layout_width="match_parent"
+					        android:layout_height="100dp"
+					        android:background="#3982e9" >
+					    </RelativeLayout>
+			            <com.example.stest.viewPagerTemp
+					                android:id="@+id/ViewPager_information_content_view"
+					                android:layout_width="match_parent"
+					                android:layout_height="500dp"
+					                android:requiresFadingEdge="horizontal"
+					                android:layout_alignParentTop="true" /> 
+	
+	        </LinearLayout>
 
     </com.example.stest.jansDrawer>
 </RelativeLayout>
