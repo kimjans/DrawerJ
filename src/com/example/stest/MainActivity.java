@@ -1,15 +1,22 @@
 package com.example.stest;
 
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.AvoidXfermode;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends Activity{
 
 	
 	private int NUM_PAGES =3;
@@ -22,7 +29,13 @@ public class MainActivity extends FragmentActivity {
 		setContentView(R.layout.activity_main);
 		
 		mViewPager = (ViewPager) findViewById(R.id.ViewPager_information_content_view);
-		mViewPager.setAdapter(    new pagerAdapter(    getSupportFragmentManager()   )      );
+		//mViewPager.setAdapter(    new pagerAdapter(    getSupportFragmentManager()   )      );
+		
+		jansDrawer j = (jansDrawer) findViewById(R.id.jansDrawer);
+		j.updateOffset(58, 130, 100);
+	
+		mViewPager.setAdapter(new PagerAdapterClass( getApplicationContext() ));
+		mViewPager.setOffscreenPageLimit(3);//버벅거리지 않게 3개 페이지 미리로드.
 		
 	}
 	
@@ -45,37 +58,58 @@ public class MainActivity extends FragmentActivity {
 		return super.onOptionsItemSelected(item);
 	}
 	
+	/**
+     * PagerAdapter 
+     */
+    private class PagerAdapterClass extends PagerAdapter{
+         
+        private LayoutInflater mInflater;
+        private boolean[] isInflate = new boolean[]{false,false,false};
+ 
+        public PagerAdapterClass(Context c){
+            super();
+            mInflater = LayoutInflater.from(c);
+            
+        }
+         
+        @Override
+        public int getCount() {
+            return 3;
+        }
+ 
+        @Override
+        public Object instantiateItem(View pager, int position) {
+        	
+            View v = null;
+//            if( isInflate[position]){
+//            	return v;
+//            }
+            if(position==0){
+                v = mInflater.inflate(R.layout.drawer_page1, null);
+                isInflate[position] = true;
+            }
+            else if(position==1){
+                v = mInflater.inflate(R.layout.drawer_page2, null);
+                isInflate[position] = true;
+            }else{
+                v = mInflater.inflate(R.layout.drawer_page3, null);
+                isInflate[position] = true;
+            }
+             
+            ((ViewPager)pager).addView(v, 0);
+             
+            return v; 
+        }
+ 
+        @Override
+        public void destroyItem(View pager, int position, Object view) {
+            //((ViewPager)pager).removeView((View)view);
+        }
+         
+        @Override
+        public boolean isViewFromObject(View pager, Object obj) {
+            return pager == obj; 
+        }
+    }
 	
-	public final static int FRAGMENT_PAGE1 = 0;
-	public final static int FRAGMENT_PAGE2 =1;
-	public final static int FRAGMENT_PAGE3 = 2;
-	
-	private class pagerAdapter extends FragmentPagerAdapter{
-		
-		pagerAdapter( android.support.v4.app.FragmentManager fm){
-			super(fm);
-		}
-		@Override
-		public Fragment getItem(int position){
-			
-			switch(position){
-				case FRAGMENT_PAGE1 :
-						return new page1Activity();
-				case FRAGMENT_PAGE2 :
-					return new page2Activity();
-				case FRAGMENT_PAGE3 :
-					return new page3Activity();
-				default :
-						return null;
-			}
-			
-		}
-		
-		@Override
-		public int getCount(){
-			return NUM_PAGES;
-		}
-		
-		
-	}
 }

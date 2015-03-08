@@ -22,7 +22,7 @@ public class page3Activity extends Fragment {
 			Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		//return super.onCreateView(inflater, container, savedInstanceState);
-		RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.activity_page3, container, false);
+		RelativeLayout layout = (RelativeLayout) inflater.inflate(R.layout.drawer_page3, container, false);
 		return layout;
 		
 	}
