@@ -58,8 +58,6 @@ public class jansDrawer extends RelativeLayout {
 	private int mMaximumAcceleration;
 	private  int mVelocityUnits;
 	
-	private int mHandleHeight = 300;
-	
 	private ViewGroup skin = null;
     public int mTouchDelta  = 0 ;
     private   float density;
@@ -173,7 +171,8 @@ public class jansDrawer extends RelativeLayout {
 				final int moveOffset = (int)event.getY() - mTouchDelta;
 				
 				if(NestedScrollView != null ){
-					if(skin.getTop() == topOffseInSet &&  moveOffset < 0){
+					Log.d("tag", skin.getTop() +"_"+ topOffseInSet +"_" + moveOffset  );
+					if(skin.getTop() == topOffseInSet &&  moveOffset < topOffseInSet ){
 						
 						if(!focusInScroll){
 							//MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN,  event.getX(), event.getY(), 0);
@@ -189,8 +188,8 @@ public class jansDrawer extends RelativeLayout {
 						focusInScroll = true;
 						return false;
 					}
-					if(skin.getTop() == topOffseInSet  &&  NestedScrollView.getScrollY() >  0 &&  moveOffset > 0){
-						//sliding은 더이상 올라갈곳이 없는데, 스크롤을 내려갈곳이 있고, 방향이 아래로 향함.
+					if(skin.getTop() == topOffseInSet  &&  NestedScrollView.getScrollY() >  0 &&  moveOffset > topOffseInSet){
+						//sliding은 더이상 올라갈곳이 없는데,      스크롤을 내려갈곳이 있고,                     방향이 아래로 향함.
 						//스크롤이있으면 올림.
 						NestedScrollView.onTouchEventMine(event);
 						focusInScroll = true;
@@ -204,6 +203,7 @@ public class jansDrawer extends RelativeLayout {
 				}
 				
 				moveHandle(  moveOffset );
+				mTouchDelta = (int) event.getY() - skin.getTop();
 				
 				break;
 			case MotionEvent.ACTION_UP :
@@ -259,7 +259,6 @@ public class jansDrawer extends RelativeLayout {
     private void moveHandle(int position) {
     	
 		final View handle = skin;
-		 mHandleHeight = 300; //핸들 높이를 임의로 잡음.
 
 		if (position == EXPANDED_FULL_OPEN) {
 			
@@ -276,8 +275,6 @@ public class jansDrawer extends RelativeLayout {
 			
 			final int top = handle.getTop();
 			int deltaY = position - top;
-			int containerBottom =  getBottom();
-			int containerTop = getTop();
 			if (position < mCurrentTopOffset ) {
 				//최상단보다 더 올라가면 최상단으로 맞춤.
 				deltaY = mCurrentTopOffset - top;
@@ -285,6 +282,7 @@ public class jansDrawer extends RelativeLayout {
 				//핸들의 최하단 보다 더 밑으로 내려가면. 최하단으로 맞춤.
 				deltaY = mCurrentBottomOffset  - top;
 			}
+			
 			handle.offsetTopAndBottom(deltaY);
 			
 		}
@@ -377,6 +375,10 @@ public class jansDrawer extends RelativeLayout {
         skin = (ViewGroup) findViewById(R.id.wrap);
         drawerContent = (ViewGroup ) findViewById(R.id.drawerContent);
         
+        drawerContent.setDrawingCacheEnabled(false);
+        skin.setDrawingCacheEnabled(false);
+        setDrawingCacheEnabled(false);
+        
         //Create시점에 height를 가져오지 못하기때문에 이곳에서 체크함.
         this.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
 	        @Override
@@ -416,9 +418,6 @@ public class jansDrawer extends RelativeLayout {
 		 invalidate();
 		if (mExpanded) {
 			
-			int bottom = getBottom();
-			int handleHeight = mHandleHeight;
-
 			c1 = velocity > mMaximumMajorVelocity ; //속도가 최고속도보다 크다.
 			//c2 =  position > mTopOffset + (mHandleHeight )8;
 			c2 =  position > mCurrentTopOffset + mThresHold ; // 위치가 top보다 아래에 있다.
@@ -594,6 +593,7 @@ public class jansDrawer extends RelativeLayout {
 			drawChild(canvas, skin, drawingTime);
 		}
 		
+		
 	}
 	
 	@Override
@@ -601,6 +601,7 @@ public class jansDrawer extends RelativeLayout {
 //		if (mTracking || mAnimating) {
 //			return;
 //		}
+		Log.d("tag", l + "_" + t + "_" + r + "_" + b );
 		final int width = r - l;
 		final int height = b - t;
 		drawerContent.layout(l,t,r,b);
@@ -620,7 +621,6 @@ public class jansDrawer extends RelativeLayout {
 		if (widthSpecMode == MeasureSpec.UNSPECIFIED || heightSpecMode == MeasureSpec.UNSPECIFIED) {
 			throw new RuntimeException("SlidingDrawer cannot have UNSPECIFIED dimensions");
 		}
-
 		drawerContent.measure(MeasureSpec.makeMeasureSpec(widthSpecSize, MeasureSpec.EXACTLY), 
 				MeasureSpec.makeMeasureSpec(heightSpecSize, MeasureSpec.EXACTLY));
 		skin.measure(MeasureSpec.makeMeasureSpec(widthSpecSize, MeasureSpec.EXACTLY), 
