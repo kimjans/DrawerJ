@@ -1,5 +1,6 @@
 package com.example.stest;
 
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -51,6 +52,7 @@ public class jansDrawer extends RelativeLayout {
 	private static final int VELOCITY_UNITS = 1000;
 	
     private boolean mTracking;
+    private boolean mMoving = false;;
     private boolean mExpanded = false;
     private  int mMaximumTapVelocity;
 	private int mMaximumMinorVelocity;
@@ -94,11 +96,14 @@ public class jansDrawer extends RelativeLayout {
 		
 		final int action = event.getAction();
 		if (action == MotionEvent.ACTION_DOWN) {
-
+			
 			if (isMoving()) {
 				 return false;
 			}
-			if( !hitTestClickableView(skin, event.getRawX(), event.getRawY()) ){
+			if(! isInView(skin, event.getRawX(), event.getRawY()) ){ //스킨화면위를 클릭했는지.
+				return false;
+			}
+			if(hitTestClickableView(skin, event.getRawX(), event.getRawY()) ){ //스킨화면위를 클릭했는지.
 				return false;
 			}
 			
@@ -109,39 +114,68 @@ public class jansDrawer extends RelativeLayout {
 				//NestedScrollView.dispatchTouchEvent(event);
 			}
 			
-			mTracking = true;
-			final int top = skin.getTop();
-			mTouchDelta = (int) event.getY() - skin.getTop();
-			prepareTracking(top);
-			mVelocityTracker.addMovement(event);
-
-			startX = (int) event.getX();
-			startY = (int) event.getY();
+			prepareTracking( event );
 			
 			return false;
 		}
+		
 		if (action == MotionEvent.ACTION_MOVE) {
 			if(!mTracking){ return false; }
-			int xdiff = Math.abs((int) event.getX() - startX);
-			int ydiff = Math.abs((int) event.getY() - startY);
-
-			if (Math.hypot(xdiff, ydiff) > 10) {
-				if (xdiff < ydiff) {
-					return true; // move 시
-				} else {
-					// 취소.
-					stopTracking();
-					return false;
-				}
+			if( mMoving  ) { return false; }
+			
+			if(isOverThreshold(event)){
+				
+				mMoving = true;  // 움직이기 시작함.
+				return true;
+				
 			}
+			return false;
+		}
+		if (action == MotionEvent.ACTION_UP) {
+			stopTracking();
 		}
 		return false;
 	};
     
+
+	/**
+	 *  움직임이 시작되는 임계값을 지나쳤는지 판단한다. 
+	 */
+	private boolean  isOverThreshold(  MotionEvent event  ){
+		
+		int xdiff = Math.abs((int) event.getX() - startX);
+		int ydiff = Math.abs((int) event.getY() - startY);
+		if (Math.hypot(xdiff, ydiff) >  15) {
+			if (xdiff < ydiff) {
+				return true; // move 시
+			} else {
+				// 취소.
+				stopTracking();
+				return false;
+			}
+		}
+		
+		return false;
+	}
+
+    private void prepareTracking(MotionEvent event ) {
+    	
+    	mTouchDelta = (int) event.getY() - skin.getTop();
+		mTracking = true;
+		mVelocityTracker = VelocityTracker.obtain();
+		mVelocityTracker.addMovement(event);
+
+		startX = (int) event.getX();
+		startY = (int) event.getY();
+		
+		mMoving = false;
+
+	}
     @Override
     public boolean onTouchEvent(MotionEvent event) {
     	switch ( event.getAction() ) {
 			case MotionEvent.ACTION_DOWN:
+				touchEventHandler(event);
 				return true;
 			case MotionEvent.ACTION_MOVE :
 			case MotionEvent.ACTION_UP :
@@ -162,16 +196,21 @@ public class jansDrawer extends RelativeLayout {
     	
     	switch ( event.getAction() ) {
 			case MotionEvent.ACTION_DOWN:
-				mTouchDelta = (int) event.getY() - skin.getTop();
-				prepareTracking(skin.getTop());
+				prepareTracking(event);
 				break;
 			case MotionEvent.ACTION_MOVE :
+				
 				if(!mTracking){return false;}
+				if(!mMoving){
+					if(isOverThreshold(  event )){
+						mMoving  = true;  //움직이기 시작함/
+					};
+					return false;
+				}
 				prepareTargetLine( skin.getTop(), true); //움직임을 전체범위로세팅.
 				final int moveOffset = (int)event.getY() - mTouchDelta;
 				
 				if(NestedScrollView != null ){
-					Log.d("tag", skin.getTop() +"_"+ topOffseInSet +"_" + moveOffset  );
 					if(skin.getTop() == topOffseInSet &&  moveOffset < topOffseInSet ){
 						
 						if(!focusInScroll){
@@ -200,8 +239,9 @@ public class jansDrawer extends RelativeLayout {
 					//스크롤을 움직이다가 다시 sliding을 움직이기 시작한경
 					focusInScroll = false;
 					mTouchDelta = (int) event.getY() - skin.getTop();
+					return false;
+					
 				}
-				
 				moveHandle(  moveOffset );
 				mTouchDelta = (int) event.getY() - skin.getTop();
 				
@@ -213,48 +253,58 @@ public class jansDrawer extends RelativeLayout {
 						NestedScrollView.onTouchEventMine(event);
 						NestedScrollView.requestLayout();
 				}
-				if(focusInScroll){
+				if(focusInScroll){ // 스크롤링중이었으면 취소.
 					stopTracking();
 					return false;
 				}
-				
 				prepareTargetLine( skin.getTop(), false ); //움직임을 현저 범위안으로 세팅.
 				
-				if(mTracking){
+				if(!mTracking){return false;}
+				if(!mMoving){return false;}
 		    		
-		    		final VelocityTracker velocityTracker = mVelocityTracker;
-		    		velocityTracker.computeCurrentVelocity(mVelocityUnits);
-		    		
-		    		float yVelocity = velocityTracker.getYVelocity();
-					float xVelocity = velocityTracker.getXVelocity();
-					
-					boolean negative;
-					negative = yVelocity < 0;
-					if (xVelocity < 0) {
-						xVelocity = -xVelocity;
-					}
-					// fix by Maciej Ciemięga.
-					if (xVelocity > mMaximumMinorVelocity) {
-						xVelocity = mMaximumMinorVelocity;
-					}
-		    		
-		    		float velocity = (float) Math.hypot(xVelocity, yVelocity);
-		    		if (negative) {
-						velocity = -velocity;
-					}
-		    		
-		    		int position = skin.getTop();
-		    		//현재위치에서 3의 가속도로 올라감.
-		    		performFling(  position, velocity , false  );
-		    		
-		    	}
+	    		final VelocityTracker velocityTracker = mVelocityTracker;
+	    		velocityTracker.computeCurrentVelocity(mVelocityUnits);
+	    		
+	    		float yVelocity = velocityTracker.getYVelocity();
+				float xVelocity = velocityTracker.getXVelocity();
 				
+				boolean negative;
+				negative = yVelocity < 0;
+				if (xVelocity < 0) {
+					xVelocity = -xVelocity;
+				}
+				// fix by Maciej Ciemięga.
+				if (xVelocity > mMaximumMinorVelocity) {
+					xVelocity = mMaximumMinorVelocity;
+				}
+	    		
+	    		float velocity = (float) Math.hypot(xVelocity, yVelocity);
+	    		if (negative) {
+					velocity = -velocity;
+				}
+	    		
+	    		int position = skin.getTop();
+	    		//현재위치에서 3의 가속도로 올라감.
+	    		performFling(  position, velocity , false  );
+		    		
 				break;
 			
     	}
     	return true;
     	
     }
+ 
+    private void stopTracking() {
+
+    	mTracking = false;
+    	NestedScrollView = null;
+    	mMoving = false;
+
+		if (mVelocityTracker != null) {
+			mVelocityTracker.recycle();
+			mVelocityTracker = null;
+		}
+	}
     
     private void moveHandle(int position) {
     	
@@ -320,22 +370,6 @@ public class jansDrawer extends RelativeLayout {
 		
 	}
 	
-    private void prepareTracking(int position) {
-    	
-		mTracking = true;
-		mVelocityTracker = VelocityTracker.obtain();
-
-	}
-    private void stopTracking() {
-
-    	mTracking = false;
-    	NestedScrollView = null;
-
-		if (mVelocityTracker != null) {
-			mVelocityTracker.recycle();
-			mVelocityTracker = null;
-		}
-	}
     
     public int dpToPx(int dp) {
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
@@ -601,7 +635,6 @@ public class jansDrawer extends RelativeLayout {
 //		if (mTracking || mAnimating) {
 //			return;
 //		}
-		Log.d("tag", l + "_" + t + "_" + r + "_" + b );
 		final int width = r - l;
 		final int height = b - t;
 		drawerContent.layout(l,t,r,b);
@@ -632,14 +665,39 @@ public class jansDrawer extends RelativeLayout {
 	
 	private Rect mViewRectInWindow = new Rect();
 	
-	private boolean hitTestClickableView(View view, float rawX, float rawY) {
-		int viewLocationInWindow[] = getLocationInWindow(view);
+	private boolean isInView(View skinView, float rawX, float rawY) {
+		int viewLocationInWindow[] = getLocationInWindow(skinView);
 		mViewRectInWindow.left = viewLocationInWindow[0];
 		mViewRectInWindow.top = viewLocationInWindow[1];
-		mViewRectInWindow.right = mViewRectInWindow.left + view.getWidth();
-		mViewRectInWindow.bottom = mViewRectInWindow.top + view.getHeight();
+		mViewRectInWindow.right = mViewRectInWindow.left + skinView.getWidth();
+		mViewRectInWindow.bottom = mViewRectInWindow.top + skinView.getHeight();
 		if (mViewRectInWindow.contains((int) rawX, (int) rawY)) {
 			return true;
+		}
+
+		return false;
+	}
+	private boolean hitTestClickableView(View view, float rawX, float rawY) {
+		
+		if (view != skin && view.isClickable()) {
+			int viewLocationInWindow[] = getLocationInWindow(view);
+			mViewRectInWindow.left = viewLocationInWindow[0];
+			mViewRectInWindow.top = viewLocationInWindow[1];
+			mViewRectInWindow.right = mViewRectInWindow.left + view.getWidth();
+			mViewRectInWindow.bottom = mViewRectInWindow.top + view.getHeight();
+			if (mViewRectInWindow.contains((int) rawX, (int) rawY)) {
+				return true;
+			}
+		}
+
+		if (view instanceof ViewGroup) {
+			ViewGroup viewGroup = (ViewGroup) view;
+			int size = viewGroup.getChildCount();
+			for (int i = 0; i < size; i++) {
+				if (hitTestClickableView(viewGroup.getChildAt(i), rawX, rawY)) {
+					return true;
+				}
+			}
 		}
 
 		return false;

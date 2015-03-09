@@ -32,6 +32,8 @@
 					                android:id="@+id/ViewPager_information_content_view"
 					                android:layout_width="match_parent"
 					                android:requiresFadingEdge="horizontal"
+					                android:overScrollMode="never"
+					                android:fadingEdge="none"
 					                android:layout_height="0dp"
 					                android:layout_weight="1"/> 
 	        </LinearLayout>
