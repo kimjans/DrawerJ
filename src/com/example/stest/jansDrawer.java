@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.MeasureSpec;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 
@@ -90,7 +91,7 @@ public class jansDrawer extends RelativeLayout {
 	}
     
     
-    private JansDrawerScroll NestedScrollView = null; 
+    private View NestedScrollView = null; 
     @Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
 		
@@ -100,14 +101,15 @@ public class jansDrawer extends RelativeLayout {
 			if (isMoving()) {
 				 return false;
 			}
-			if(! isInView(skin, event.getRawX(), event.getRawY()) ){ //스킨화면위를 클릭했는지.
+			if(!isInView(skin, event.getRawX(), event.getRawY()) ){ //스킨화면위를 클릭했는지.
 				return false;
 			}
 			if(hitTestClickableView(skin, event.getRawX(), event.getRawY()) ){ //스킨화면위를 클릭했는지.
-				return false;
+				//return false;
 			}
 			
-			NestedScrollView = (JansDrawerScroll) findScrollView( skin, event.getRawX(), event.getRawY() );
+			NestedScrollView = findScrollView( skin, event.getRawX(), event.getRawY() );
+			 
 			if(NestedScrollView != null ){
 				MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN,  event.getX(), event.getY(), 0);
 				NestedScrollView.onTouchEventMine(event);
@@ -175,6 +177,9 @@ public class jansDrawer extends RelativeLayout {
     public boolean onTouchEvent(MotionEvent event) {
     	switch ( event.getAction() ) {
 			case MotionEvent.ACTION_DOWN:
+				if(!isInView(skin, event.getRawX(), event.getRawY()) ){ //스킨화면위를 클릭했는지.
+					return false;
+				}
 				touchEventHandler(event);
 				return true;
 			case MotionEvent.ACTION_MOVE :
@@ -334,6 +339,7 @@ public class jansDrawer extends RelativeLayout {
 			}
 			
 			handle.offsetTopAndBottom(deltaY);
+			invalidate();
 			
 		}
 		
@@ -637,7 +643,8 @@ public class jansDrawer extends RelativeLayout {
 //		}
 		final int width = r - l;
 		final int height = b - t;
-		drawerContent.layout(l,t,r,b);
+		Log.d("tag", "" +t +"__" +b);
+		drawerContent.layout(l, t ,r, b - mBottomOffset);
 		skin.layout(0, skin.getTop(), skin.getMeasuredWidth(), skin.getTop() +skin.getMeasuredHeight());
 		
 	}
@@ -705,7 +712,7 @@ public class jansDrawer extends RelativeLayout {
 	
 	private View findScrollView(View view, float rawX, float rawY){
 		
-		if( view instanceof ScrollView){
+		if( view instanceof ScrollView || view instanceof ListView){
 			int viewLocationInWindow[] = getLocationInWindow(view);
 			mViewRectInWindow.left = viewLocationInWindow[0];
 			mViewRectInWindow.top = viewLocationInWindow[1];
