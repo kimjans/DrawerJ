@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <View
+            android:id="@+id/View_TopLine_category_list_activity"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#D7D7DA"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/LinearLayout_CategoryListContentViewCell_common"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/ic_launcher"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/ImageView_CategoryListContentViewCell_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="17dp"
+                android:layout_marginRight="11dp"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:id="@+id/TextView_CategoryListContentViewCell_result"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:lines="1"
+                android:textColor="#123456"
+                android:textSize="16dp" />
+
+            <TextView
+                android:id="@+id/TextView_CategoryListContentViewCell_result_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:lines="1"
+                android:paddingLeft="10dp"
+                android:textColor="#90959E"
+                android:textSize="13dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:id="@+id/LinearLayout_CategoryListContentViewCell_RightBtnArea"
+                android:layout_width="59dp"
+                android:layout_height="match_parent"
+                android:gravity="right|center_vertical" >
+
+                <ToggleButton
+                    android:id="@+id/ToggleButton_CategoryListContentViewCell_RightBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@null"
+                    android:drawableRight="@drawable/ic_launcher"
+                    android:padding="14.5dp"
+                    android:textOff=""
+                    android:textOn=""
+                    android:visibility="visible" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:id="@+id/View_BottomLine_category_list_activity"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#EBEBEE" />
+    </LinearLayout>
+
+</merge>
