@@ -3,7 +3,7 @@
     android:layout_height="match_parent" 
     tools:context=".MainActivity">
 
-    <com.example.stest.jansDrawer
+    <com.example.stest.JansDrawer
         android:id="@+id/jansDrawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -38,5 +38,5 @@
 					                android:layout_weight="1"/> 
 	        </LinearLayout>
 
-    </com.example.stest.jansDrawer>
+    </com.example.stest.JansDrawer>
 </RelativeLayout>

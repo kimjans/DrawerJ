@@ -31,7 +31,7 @@ public class MainActivity extends Activity{
 		mViewPager = (ViewPager) findViewById(R.id.ViewPager_information_content_view);
 		//mViewPager.setAdapter(    new pagerAdapter(    getSupportFragmentManager()   )      );
 		
-		jansDrawer j = (jansDrawer) findViewById(R.id.jansDrawer);
+		JansDrawer j = (JansDrawer) findViewById(R.id.jansDrawer);
 		j.updateOffset(58, 130, 100);
 	
 		mViewPager.setAdapter(new PagerAdapterClass( getApplicationContext() ));

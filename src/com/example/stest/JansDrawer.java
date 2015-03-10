@@ -26,7 +26,7 @@ import android.widget.ScrollView;
 /**
  * Created by Jans on 15. 3. 3..
  */
-public class jansDrawer extends RelativeLayout {
+public class JansDrawer extends RelativeLayout {
 
 	private boolean mAnimating;
 	private static final int MSG_ANIMATE = 1000;
@@ -76,14 +76,14 @@ public class jansDrawer extends RelativeLayout {
 	private Integer[] targetLine = new Integer[]{mTopOffset, mBottomOffset}; //초기값.
 		
 	
-    public jansDrawer(Context context) {
+    public JansDrawer(Context context) {
         super(context);
     }
-    public jansDrawer(Context context, AttributeSet attrs) {
+    public JansDrawer(Context context, AttributeSet attrs) {
         super(context, attrs);
         
     }
-    public jansDrawer(Context context, AttributeSet attrs, int defStyle) {
+    public JansDrawer(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
     public boolean isMoving() {
@@ -91,7 +91,7 @@ public class jansDrawer extends RelativeLayout {
 	}
     
     
-    private View NestedScrollView = null; 
+    private JansDrawerScroll NestedScrollView = null; 
     @Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
 		
@@ -108,7 +108,7 @@ public class jansDrawer extends RelativeLayout {
 				//return false;
 			}
 			
-			NestedScrollView = findScrollView( skin, event.getRawX(), event.getRawY() );
+			NestedScrollView = (JansDrawerScroll) findScrollView( skin, event.getRawX(), event.getRawY() );
 			 
 			if(NestedScrollView != null ){
 				MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN,  event.getX(), event.getY(), 0);
@@ -712,7 +712,7 @@ public class jansDrawer extends RelativeLayout {
 	
 	private View findScrollView(View view, float rawX, float rawY){
 		
-		if( view instanceof ScrollView || view instanceof ListView){
+		if( view instanceof ScrollView){
 			int viewLocationInWindow[] = getLocationInWindow(view);
 			mViewRectInWindow.left = viewLocationInWindow[0];
 			mViewRectInWindow.top = viewLocationInWindow[1];
