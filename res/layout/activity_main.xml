@@ -13,36 +13,45 @@
             android:layout_width="match_parent"
             android:background="#123456"
         	android:layout_height="match_parent">
+        	
+            <Button 
+                android:id="@+id/button"
+                android:layout_width="100dp"
+            	android:background="#876545"
+        		android:layout_height="100dp" />
         </RelativeLayout>
-	
-            <LinearLayout
-	            android:id="@+id/wrap"
-	            android:orientation="vertical"
-	            android:layout_width="match_parent"
-	            android:layout_height="match_parent"
-	            android:layout_gravity="center_vertical" >
-	            
-				         <RelativeLayout
-					        android:id="@+id/titleBar"
-					        android:layout_width="match_parent"
-					        android:layout_height="100dp"
-					        android:background="#3982e9" >
-					    </RelativeLayout>
-			            <android.support.v4.view.ViewPager
-					                android:id="@+id/ViewPager_information_content_view"
-					                android:layout_width="match_parent"
-					                android:requiresFadingEdge="horizontal"
-					                android:overScrollMode="never"
-					                android:fadingEdge="none"
-					                android:layout_height="0dp"
-					                android:layout_weight="1"/> 
-	        </LinearLayout>
-	        <RelativeLayout 
-		           android:id="@+id/drawerOverContent"
-		           android:layout_width="match_parent"
-			       	android:layout_height="0dp"
-			       	android:visibility="gone">
-        	</RelativeLayout>
+	 <RelativeLayout 
+            android:id="@+id/drawerOverSkin"
+            android:layout_width="match_parent"
+            android:background="#123456"
+        	android:layout_height="match_parent">
+					 		<LinearLayout
+					            android:orientation="vertical"
+					            android:layout_width="match_parent"
+					            android:layout_height="match_parent"
+					            android:layout_gravity="center_vertical" >
+							            		 	<RelativeLayout
+											        android:id="@+id/titleBar"
+											        android:layout_width="match_parent"
+											        android:layout_height="100dp"
+											        android:background="#3982e9" >
+											    </RelativeLayout>
+									            <android.support.v4.view.ViewPager
+											                android:id="@+id/ViewPager_information_content_view"
+											                android:layout_width="match_parent"
+											                android:requiresFadingEdge="horizontal"
+											                android:overScrollMode="never"
+											                android:fadingEdge="none"
+											                android:layout_height="0dp"
+											                android:layout_weight="1"/>   
+					        </LinearLayout>
+        </RelativeLayout>
+        <RelativeLayout 
+	           android:id="@+id/drawerOverContent"
+	           android:layout_width="match_parent"
+		       	android:layout_height="0dp"
+		       	android:visibility="gone">
+       	</RelativeLayout>
 
     </com.example.stest.InfoDrawer>
 </RelativeLayout>

@@ -14,6 +14,9 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
 public class MainActivity extends Activity{
 
@@ -31,10 +34,24 @@ public class MainActivity extends Activity{
 		//mViewPager.setAdapter(    new pagerAdapter(    getSupportFragmentManager()   )      );
 		
 		InfoDrawer j = (InfoDrawer) findViewById(R.id.jansDrawer);
-		j.updateOffset(58, 130, 100);
+		j.updateOffset(58, 130, 56);
 	
 		mViewPager.setAdapter(new PagerAdapterClass( getApplicationContext() ));
 		mViewPager.setOffscreenPageLimit(3);//버벅거리지 않게 3개 페이지 미리로드.
+		
+		Button b = (Button) findViewById( R.id.button );
+		b.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				
+				InfoDrawer j = (InfoDrawer) findViewById(R.id.jansDrawer);
+				
+				j.changeSliding(new LinearLayout( getApplicationContext()), 35, 150, 100);
+				
+			}
+		});
+		
 		
 	}
 	

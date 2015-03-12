@@ -162,13 +162,16 @@ public class InfoDrawer extends RelativeLayout {
 
     private void prepareTracking(MotionEvent event ) {
     	
-    	mTouchDelta = (int) event.getY() - skin.getTop();
+    	
 		mTracking = true;
 		mVelocityTracker = VelocityTracker.obtain();
-		mVelocityTracker.addMovement(event);
-
-		startX = (int) event.getX();
-		startY = (int) event.getY();
+		
+		if(event != null){
+			mVelocityTracker.addMovement(event);
+			mTouchDelta = (int) event.getY() - skin.getTop();
+			startX = (int) event.getX();
+			startY = (int) event.getY();
+		}
 		
 		mMoving = false;
 
@@ -209,6 +212,7 @@ public class InfoDrawer extends RelativeLayout {
 					};
 					return false;
 				}
+				
 				prepareTargetLine( skin.getTop(), true); //움직임을 전체범위로세팅.
 				final int moveOffset = (int)event.getY() - mTouchDelta;
 				
@@ -315,12 +319,14 @@ public class InfoDrawer extends RelativeLayout {
 		if (position == EXPANDED_FULL_OPEN) {
 			
 			handle.offsetTopAndBottom(mCurrentTopOffset - top);
+			moveEnd();
 			invalidate();
 				
 		} else if (position == COLLAPSED_FULL_CLOSED) {
 			
 			
 			handle.offsetTopAndBottom(mCurrentBottomOffset - top);
+			moveEnd();
 			invalidate();
 				
 		} else {
@@ -337,9 +343,16 @@ public class InfoDrawer extends RelativeLayout {
 			handle.offsetTopAndBottom(deltaY);
 			
 		}
-		drawerOverContent.setTop(  ( getHeight() - mBottomOffset) - handle.getTop() );
+		drawerOverContent.setTop(  getBottomLine() - handle.getTop() );
 		invalidate();
 	}
+    
+    private int getTopLine(){
+    	return  mTopOffset;
+    }
+    private int getBottomLine(){
+    	return getHeight() - mBottomOffset;
+    }
     
     private int topOffseInSet;
 	private ViewGroup drawerContent;
@@ -409,7 +422,7 @@ public class InfoDrawer extends RelativeLayout {
 		mVelocityUnits = (int) (VELOCITY_UNITS * density + 0.5f);
 		mTapThreshold = (int) (TAP_THRESHOLD * density + 0.5f);
 
-        skin = (ViewGroup) findViewById(R.id.wrap);
+        skin = (ViewGroup) findViewById(R.id.drawerOverSkin);
         drawerContent = (ViewGroup ) findViewById(R.id.drawerContent);
         drawerOverContent = (ViewGroup ) findViewById(R.id.drawerOverContent);
         
@@ -522,8 +535,8 @@ public class InfoDrawer extends RelativeLayout {
     	
     }
     private void doAnimation() {
-    	
     	if (mAnimating) {
+    		mAnimationPosition = mAnimationPosition;
     		
 			incrementAnimation();
 			
@@ -537,6 +550,8 @@ public class InfoDrawer extends RelativeLayout {
 				mAnimating = false;
 				openDrawer();
 			} else {
+				
+				
 				moveHandle((int) mAnimationPosition);
 				mCurrentAnimationTime += ANIMATION_FRAME_DURATION;
 				mHandler.sendMessageAtTime(mHandler.obtainMessage(MSG_ANIMATE), mCurrentAnimationTime);
@@ -563,6 +578,46 @@ public class InfoDrawer extends RelativeLayout {
 		mExpanded = true;
 
 	}
+
+	private boolean bChangeView = false;
+	private int newTop=0;
+	private int newMiddle=0;
+	private int newBottom=0;
+	private View newView= null;
+	public void changeSliding(View view, int newTop, int newMiddle, int newBottom) {
+		
+		this.newTop = newTop;
+		this.newMiddle = newMiddle;
+		this.newBottom = newBottom;
+		this.newView = view;
+		
+		bChangeView = true;
+		mHandler.removeMessages(MSG_ANIMATE); //기존 애니메이션제거.
+		setMoveRange(skin.getTop(), getHeight());    // 최하단까지 범위조정.
+		animateClose( skin.getTop());									// 최하단으로 이동.
+		
+	}
+	private void moveEnd(){
+		if(bChangeView){
+			//To-do
+			//스킨변경 코드가 들어가야함.
+			Log.d("test", "test");
+			updateOffset(this.newTop, this.newMiddle , this.newBottom );	//새로운 offset 으로세팅.
+			setMoveRange( getBottomLine() , getHeight()); //범위를 새로운 offset 시작지점으로 설정.
+			
+			animateOpen(  getHeight()); // 이작지점으로 이동하기.
+			bChangeView = false;
+		}
+	}
+	private void animateClose(int position) {
+		prepareTracking(null);
+		performFling(position,  300, true);
+	}
+
+	private void animateOpen(int position) {
+		prepareTracking(null);
+		performFling(position, -300, true);
+	}
     
     private float mAnimatedAcceleration;
 	private float mAnimatedVelocity;
@@ -587,7 +642,7 @@ public class InfoDrawer extends RelativeLayout {
 		
 		float mStartAnimationPosition  = mAnimationPosition;
 		
-		float t = 0.04f; // s
+		float t = 0.08f; // s
 		final float position = mAnimationPosition;
 		final float v = mAnimatedVelocity; // px/s
 		final float a = mAnimatedAcceleration; // px/s/s
@@ -755,7 +810,6 @@ public class InfoDrawer extends RelativeLayout {
 		return location;
 	}
 
-	
     private class SlidingHandler extends Handler {
 
 		public void handleMessage(Message m) {
