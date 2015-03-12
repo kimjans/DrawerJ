@@ -2,7 +2,6 @@ package com.example.stest;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.AvoidXfermode;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
@@ -31,7 +30,7 @@ public class MainActivity extends Activity{
 		mViewPager = (ViewPager) findViewById(R.id.ViewPager_information_content_view);
 		//mViewPager.setAdapter(    new pagerAdapter(    getSupportFragmentManager()   )      );
 		
-		JansDrawer j = (JansDrawer) findViewById(R.id.jansDrawer);
+		InfoDrawer j = (InfoDrawer) findViewById(R.id.jansDrawer);
 		j.updateOffset(58, 130, 100);
 	
 		mViewPager.setAdapter(new PagerAdapterClass( getApplicationContext() ));

@@ -5,7 +5,7 @@
     android:background="#FF3456"
     tools:context=".MainActivity" >
 
-    <com.example.stest.JansDrawerScroll
+    <com.example.stest.InfoDrawerScroll
         android:id="@+id/scrollView1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -106,6 +106,6 @@
                  android:text="Button6" />
 	        
 	    </LinearLayout>
-    </com.example.stest.JansDrawerScroll>
+    </com.example.stest.InfoDrawerScroll>
 
 </RelativeLayout>

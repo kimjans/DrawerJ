@@ -19,14 +19,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.MeasureSpec;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+
 
 /**
  * Created by Jans on 15. 3. 3..
  */
-public class JansDrawer extends RelativeLayout {
+public class InfoDrawer extends RelativeLayout {
 
 	private boolean mAnimating;
 	private static final int MSG_ANIMATE = 1000;
@@ -68,7 +69,7 @@ public class JansDrawer extends RelativeLayout {
     
     private int mTopOffset = 58; // 상단 오프
     private int mMiddleOffset = 200; // 중간에 멈춰야할 부분.
-    private int mBottomOffset  = 100; //하단오프
+    private int mBottomOffset  = 56; //하단오프
     
     private int mCurrentTopOffset; // 현재 움직이고 있는 범위의 Top
     private int mCurrentBottomOffset; // 현재 움직이고 있는 범위 Bottom
@@ -76,14 +77,14 @@ public class JansDrawer extends RelativeLayout {
 	private Integer[] targetLine = new Integer[]{mTopOffset, mBottomOffset}; //초기값.
 		
 	
-    public JansDrawer(Context context) {
+    public InfoDrawer(Context context) {
         super(context);
     }
-    public JansDrawer(Context context, AttributeSet attrs) {
+    public InfoDrawer(Context context, AttributeSet attrs) {
         super(context, attrs);
         
     }
-    public JansDrawer(Context context, AttributeSet attrs, int defStyle) {
+    public InfoDrawer(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
     public boolean isMoving() {
@@ -91,7 +92,7 @@ public class JansDrawer extends RelativeLayout {
 	}
     
     
-    private JansDrawerScroll NestedScrollView = null; 
+    private InfoDrawerScroll NestedScrollView = null; 
     @Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
 		
@@ -101,15 +102,14 @@ public class JansDrawer extends RelativeLayout {
 			if (isMoving()) {
 				 return false;
 			}
-			if(!isInView(skin, event.getRawX(), event.getRawY()) ){ //스킨화면위를 클릭했는지.
+			if(! isInView(skin, event.getRawX(), event.getRawY()) ){ //스킨화면위를 클릭했는지.
 				return false;
 			}
 			if(hitTestClickableView(skin, event.getRawX(), event.getRawY()) ){ //스킨화면위를 클릭했는지.
 				//return false;
 			}
 			
-			NestedScrollView = (JansDrawerScroll) findScrollView( skin, event.getRawX(), event.getRawY() );
-			 
+			NestedScrollView = (InfoDrawerScroll) findScrollView( skin, event.getRawX(), event.getRawY() );
 			if(NestedScrollView != null ){
 				MotionEvent ev = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN,  event.getX(), event.getY(), 0);
 				NestedScrollView.onTouchEventMine(event);
@@ -177,9 +177,6 @@ public class JansDrawer extends RelativeLayout {
     public boolean onTouchEvent(MotionEvent event) {
     	switch ( event.getAction() ) {
 			case MotionEvent.ACTION_DOWN:
-				if(!isInView(skin, event.getRawX(), event.getRawY()) ){ //스킨화면위를 클릭했는지.
-					return false;
-				}
 				touchEventHandler(event);
 				return true;
 			case MotionEvent.ACTION_MOVE :
@@ -314,21 +311,20 @@ public class JansDrawer extends RelativeLayout {
     private void moveHandle(int position) {
     	
 		final View handle = skin;
-
+		int top = handle.getTop();
 		if (position == EXPANDED_FULL_OPEN) {
 			
-			handle.offsetTopAndBottom(mCurrentTopOffset - handle.getTop());
+			handle.offsetTopAndBottom(mCurrentTopOffset - top);
 			invalidate();
 				
 		} else if (position == COLLAPSED_FULL_CLOSED) {
 			
-			int a = handle.getTop();
-			handle.offsetTopAndBottom(mCurrentBottomOffset -  handle.getTop());
+			
+			handle.offsetTopAndBottom(mCurrentBottomOffset - top);
 			invalidate();
 				
 		} else {
 			
-			final int top = handle.getTop();
 			int deltaY = position - top;
 			if (position < mCurrentTopOffset ) {
 				//최상단보다 더 올라가면 최상단으로 맞춤.
@@ -339,14 +335,15 @@ public class JansDrawer extends RelativeLayout {
 			}
 			
 			handle.offsetTopAndBottom(deltaY);
-			invalidate();
 			
 		}
-		
+		drawerOverContent.setTop(  ( getHeight() - mBottomOffset) - handle.getTop() );
+		invalidate();
 	}
     
     private int topOffseInSet;
-	private ViewGroup drawerContent; 
+	private ViewGroup drawerContent;
+	private ViewGroup drawerOverContent; 
 	//컨텐츠가 움직일 범위를 세팅한다.
 	private void prepareTargetLine(int position, boolean fullRange){
 		
@@ -414,10 +411,11 @@ public class JansDrawer extends RelativeLayout {
 
         skin = (ViewGroup) findViewById(R.id.wrap);
         drawerContent = (ViewGroup ) findViewById(R.id.drawerContent);
+        drawerOverContent = (ViewGroup ) findViewById(R.id.drawerOverContent);
         
-        drawerContent.setDrawingCacheEnabled(false);
-        skin.setDrawingCacheEnabled(false);
-        setDrawingCacheEnabled(false);
+//        drawerContent.setDrawingCacheEnabled(false);
+//        skin.setDrawingCacheEnabled(false);
+//        setDrawingCacheEnabled(false);
         
         //Create시점에 height를 가져오지 못하기때문에 이곳에서 체크함.
         this.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
@@ -627,10 +625,21 @@ public class JansDrawer extends RelativeLayout {
 				canvas.restore();
 			}
 			
+			final Bitmap cache3 = drawerOverContent.getDrawingCache();
+			if (cache3 != null) {
+				canvas.drawBitmap(cache3, 0, drawerOverContent.getBottom(), null);
+			} else {
+				canvas.save();
+				drawChild(canvas, drawerOverContent, drawingTime);
+				canvas.restore();
+			}
+			
 			invalidate();
+			
 		}else{
 			drawChild(canvas, drawerContent, drawingTime);
 			drawChild(canvas, skin, drawingTime);
+			drawChild(canvas, drawerOverContent, drawingTime);
 		}
 		
 		
@@ -643,8 +652,8 @@ public class JansDrawer extends RelativeLayout {
 //		}
 		final int width = r - l;
 		final int height = b - t;
-		Log.d("tag", "" +t +"__" +b);
-		drawerContent.layout(l, t ,r, b - mBottomOffset);
+		drawerContent.layout(l,t,r,b);
+		drawerOverContent.layout(l, drawerOverContent.getTop(),r, drawerOverContent.getTop() + drawerOverContent.getMeasuredHeight());
 		skin.layout(0, skin.getTop(), skin.getMeasuredWidth(), skin.getTop() +skin.getMeasuredHeight());
 		
 	}
@@ -663,6 +672,9 @@ public class JansDrawer extends RelativeLayout {
 		}
 		drawerContent.measure(MeasureSpec.makeMeasureSpec(widthSpecSize, MeasureSpec.EXACTLY), 
 				MeasureSpec.makeMeasureSpec(heightSpecSize, MeasureSpec.EXACTLY));
+		drawerOverContent.measure(MeasureSpec.makeMeasureSpec(widthSpecSize, MeasureSpec.EXACTLY), 
+				MeasureSpec.makeMeasureSpec(heightSpecSize, MeasureSpec.EXACTLY));
+		
 		skin.measure(MeasureSpec.makeMeasureSpec(widthSpecSize, MeasureSpec.EXACTLY), 
 				MeasureSpec.makeMeasureSpec(heightSpecSize - mTopOffset, MeasureSpec.EXACTLY));
 

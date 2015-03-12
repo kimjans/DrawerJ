@@ -7,13 +7,13 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.ScrollView;
 
-public class JansDrawerScroll extends ScrollView {
+public class InfoDrawerScroll extends ScrollView {
 
 	/**
 	 * @param context
 	 * @param attrs
 	 */
-	public JansDrawerScroll(Context context, AttributeSet attrs) {
+	public InfoDrawerScroll(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 	@Override
